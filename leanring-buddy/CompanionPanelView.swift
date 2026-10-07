@@ -84,24 +84,45 @@ struct CompanionPanelView: View {
     // MARK: - Header
 
     private var panelHeader: some View {
-        HStack {
-            HStack(spacing: 8) {
-                // Animated status dot
-                Circle()
-                    .fill(statusDotColor)
-                    .frame(width: 8, height: 8)
-                    .shadow(color: statusDotColor.opacity(0.6), radius: 4)
+        HStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(DS.Colors.surface3)
+                    .frame(width: 30, height: 30)
 
+                Image(systemName: "sparkles")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(DS.Colors.accentText)
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
                 Text("Clicky")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(DS.Colors.textPrimary)
+
+                Text("SCREEN-SIDE ASSISTANT")
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
+                    .tracking(0.6)
+                    .foregroundColor(DS.Colors.textTertiary)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            Text(statusText)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(DS.Colors.textTertiary)
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(statusDotColor)
+                    .frame(width: 7, height: 7)
+                    .shadow(color: statusDotColor.opacity(0.5), radius: 3)
+
+                Text(statusText)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(DS.Colors.textSecondary)
+            }
+            .padding(.horizontal, 9)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(DS.Colors.surface2))
+            .overlay(Capsule().stroke(DS.Colors.borderSubtle, lineWidth: 0.5))
+            .accessibilityElement(children: .combine)
 
             Button(action: {
                 NotificationCenter.default.post(name: .clickyDismissPanel, object: nil)
@@ -109,11 +130,8 @@ struct CompanionPanelView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(DS.Colors.textTertiary)
-                    .frame(width: 20, height: 20)
-                    .background(
-                        Circle()
-                            .fill(Color.white.opacity(0.08))
-                    )
+                    .frame(width: 24, height: 24)
+                    .background(Circle().fill(DS.Colors.surface2))
             }
             .buttonStyle(.plain)
             .pointerCursor()
@@ -127,56 +145,129 @@ struct CompanionPanelView: View {
     @ViewBuilder
     private var permissionsCopySection: some View {
         if companionManager.hasCompletedOnboarding && companionManager.allPermissionsGranted {
-            Text("Hold Control+Option to talk.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(DS.Colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Ready when you are")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(DS.Colors.textPrimary)
+
+                    Text("Ask about anything on your screen.")
+                        .font(.system(size: 12))
+                        .foregroundColor(DS.Colors.textSecondary)
+                }
+
+                HStack(spacing: 7) {
+                    Text("Hold")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(DS.Colors.textTertiary)
+
+                    shortcutKeycap(symbol: "⌃", label: "Control")
+
+                    Text("+")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(DS.Colors.textTertiary)
+
+                    shortcutKeycap(symbol: "⌥", label: "Option")
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: DS.CornerRadius.large, style: .continuous)
+                    .fill(DS.Colors.surface1)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: DS.CornerRadius.large, style: .continuous)
+                    .stroke(DS.Colors.borderSubtle, lineWidth: 0.5)
+            )
         } else if companionManager.allPermissionsGranted && !companionManager.hasSubmittedEmail {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Drop your email to get started.")
-                    .font(.system(size: 12, weight: .medium))
+                Text("A quick hello first")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(DS.Colors.textPrimary)
+                Text("Add your email for occasional project updates.")
+                    .font(.system(size: 12))
                     .foregroundColor(DS.Colors.textSecondary)
-                Text("If I keep building this, I'll keep you in the loop.")
-                    .font(.system(size: 11))
-                    .foregroundColor(DS.Colors.textTertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if companionManager.allPermissionsGranted {
-            Text("You're all set. Hit Start to meet Clicky.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(DS.Colors.textSecondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("You're all set")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(DS.Colors.textPrimary)
+                Text("Start your first voice session with Clicky.")
+                    .font(.system(size: 12))
+                    .foregroundColor(DS.Colors.textSecondary)
+            }
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else if companionManager.hasCompletedOnboarding {
-            // Permissions were revoked after onboarding — tell user to re-grant
             VStack(alignment: .leading, spacing: 6) {
-                Text("Permissions needed")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(DS.Colors.textSecondary)
+                Text("Access needs a refresh")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(DS.Colors.textPrimary)
 
-                Text("Some permissions were revoked. Grant all four below to keep using Clicky.")
-                    .font(.system(size: 11))
-                    .foregroundColor(DS.Colors.textTertiary)
+                Text("Re-enable the missing permissions below to keep using Clicky.")
+                    .font(.system(size: 12))
+                    .foregroundColor(DS.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Hi, I'm Farza. This is Clicky.")
-                    .font(.system(size: 12, weight: .bold))
+                Text("Your screen-side assistant")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(DS.Colors.textPrimary)
+
+                Text("Ask a question out loud and Clicky can answer with your screen in context.")
+                    .font(.system(size: 12))
                     .foregroundColor(DS.Colors.textSecondary)
-
-                Text("A side project I made for fun to help me learn stuff as I use my computer.")
-                    .font(.system(size: 11))
-                    .foregroundColor(DS.Colors.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Nothing runs in the background. Clicky will only take a screenshot when you press the hot key. So, you can give that permission in peace. If you are still sus, eh, I can't do much there champ.")
-                    .font(.system(size: 11))
-                    .foregroundColor(Color(red: 0.9, green: 0.4, blue: 0.4))
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "lock.shield")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(DS.Colors.accentText)
+
+                    Text("Screen capture only starts when you use the voice shortcut.")
+                        .font(.system(size: 11))
+                        .foregroundColor(DS.Colors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: DS.CornerRadius.medium, style: .continuous)
+                        .fill(DS.Colors.surface1)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DS.CornerRadius.medium, style: .continuous)
+                        .stroke(DS.Colors.borderSubtle, lineWidth: 0.5)
+                )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    private func shortcutKeycap(symbol: String, label: String) -> some View {
+        HStack(spacing: 5) {
+            Text(symbol)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+
+            Text(label)
+                .font(.system(size: 10, weight: .medium))
+        }
+        .foregroundColor(DS.Colors.textPrimary)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: DS.CornerRadius.small, style: .continuous)
+                .fill(DS.Colors.surface2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: DS.CornerRadius.small, style: .continuous)
+                .stroke(DS.Colors.borderSubtle, lineWidth: 0.5)
+        )
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Email + Start Button
@@ -204,7 +295,7 @@ struct CompanionPanelView: View {
                     Button(action: {
                         companionManager.submitEmail(emailInput)
                     }) {
-                        Text("Submit")
+                        Text("Save email")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(DS.Colors.textOnAccent)
                             .frame(maxWidth: .infinity)
@@ -243,12 +334,18 @@ struct CompanionPanelView: View {
     // MARK: - Permissions
 
     private var settingsSection: some View {
-        VStack(spacing: 2) {
-            Text("PERMISSIONS")
-                .font(.system(size: 10, weight: .semibold, design: .rounded))
-                .foregroundColor(DS.Colors.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 6)
+        VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("REQUIRED ACCESS")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .tracking(0.5)
+                    .foregroundColor(DS.Colors.textTertiary)
+
+                Text("Grant each item to finish setup.")
+                    .font(.system(size: 11))
+                    .foregroundColor(DS.Colors.textSecondary)
+            }
+            .padding(.bottom, 6)
 
             microphonePermissionRow
 
